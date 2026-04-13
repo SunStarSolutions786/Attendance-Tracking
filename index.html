@@ -429,7 +429,19 @@ tbody tr:hover { background:rgba(255,255,255,.015); }
 <!-- ══════════════════════════════════════
      LOGIN SCREEN
 ══════════════════════════════════════ -->
-<div class="screen active" id="loginScreen">
+<!-- Loading splash -->
+<div id="splashScreen" style="position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;">
+  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj4KICA8ZGVmcz4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0ic3VuR3JhZCIgY3g9IjUwJSIgY3k9IjQwJSIgcj0iNTAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI0ZGRDcwMCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjYwJSIgc3RvcC1jb2xvcj0iI0ZGOEMwMCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNGRjQ1MDAiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9InNHcmFkIiBjeD0iMzAlIiBjeT0iMzAlIiByPSI3MCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjRkY2QjM1Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTAlIiBzdG9wLWNvbG9yPSIjRTg0QjFFIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzE1NjVDMCIvPgogICAgPC9yYWRpYWxHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0ic3dpcmwiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMTk3NkQyIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzBENDdBMSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTAwLDkwKSIgZmlsbD0idXJsKCNzdW5HcmFkKSI+CiAgICA8cG9seWdvbiBwb2ludHM9IjAsLTUyIDQsLTM4IC00LC0zOCIgb3BhY2l0eT0iMC45Ii8+CiAgICA8cG9seWdvbiBwb2ludHM9IjAsLTUyIDQsLTM4IC00LC0zOCIgdHJhbnNmb3JtPSJyb3RhdGUoMzApIiBvcGFjaXR5PSIwLjkiLz4KICAgIDxwb2x5Z29uIHBvaW50cz0iMCwtNTIgNCwtMzggLTQsLTM4IiB0cmFuc2Zvcm09InJvdGF0ZSg2MCkiIG9wYWNpdHk9IjAuOSIvPgogICAgPHBvbHlnb24gcG9pbnRzPSIwLC01MiA0LC0zOCAtNCwtMzgiIHRyYW5zZm9ybT0icm90YXRlKDkwKSIgb3BhY2l0eT0iMC45Ii8+CiAgICA8cG9seWdvbiBwb2ludHM9IjAsLTUyIDQsLTM4IC00LC0zOCIgdHJhbnNmb3JtPSJyb3RhdGUoMTIwKSIgb3BhY2l0eT0iMC45Ii8+CiAgICA8cG9seWdvbiBwb2ludHM9IjAsLTUyIDQsLTM4IC00LC0zOCIgdHJhbnNmb3JtPSJyb3RhdGUoMTUwKSIgb3BhY2l0eT0iMC45Ii8+CiAgICA8cG9seWdvbiBwb2ludHM9IjAsLTUyIDQsLTM4IC00LC0zOCIgdHJhbnNmb3JtPSJyb3RhdGUoMTgwKSIgb3BhY2l0eT0iMC45Ii8+CiAgICA8cG9seWdvbiBwb2ludHM9IjAsLTUyIDQsLTM4IC00LC0zOCIgdHJhbnNmb3JtPSJyb3RhdGUoMjEwKSIgb3BhY2l0eT0iMC45Ii8+CiAgICA8cG9seWdvbiBwb2ludHM9IjAsLTUyIDQsLTM4IC00LC0zOCIgdHJhbnNmb3JtPSJyb3RhdGUoMjQwKSIgb3BhY2l0eT0iMC45Ii8+CiAgICA8cG9seWdvbiBwb2ludHM9IjAsLTUyIDQsLTM4IC00LC0zOCIgdHJhbnNmb3JtPSJyb3RhdGUoMjcwKSIgb3BhY2l0eT0iMC45Ii8+CiAgICA8cG9seWdvbiBwb2ludHM9IjAsLTUyIDQsLTM4IC00LC0zOCIgdHJhbnNmb3JtPSJyb3RhdGUoMzAwKSIgb3BhY2l0eT0iMC45Ii8+CiAgICA8cG9seWdvbiBwb2ludHM9IjAsLTUyIDQsLTM4IC00LC0zOCIgdHJhbnNmb3JtPSJyb3RhdGUoMzMwKSIgb3BhY2l0eT0iMC45Ii8+CiAgPC9nPgogIDxjaXJjbGUgY3g9IjEwMCIgY3k9IjkwIiByPSIzNiIgZmlsbD0idXJsKCNzdW5HcmFkKSIgb3BhY2l0eT0iMC4xNSIvPgogIDxlbGxpcHNlIGN4PSIxMDAiIGN5PSIxMTgiIHJ4PSI0NiIgcnk9IjEyIiBmaWxsPSJ1cmwoI3N3aXJsKSIgb3BhY2l0eT0iMC45IiB0cmFuc2Zvcm09InJvdGF0ZSgtMTIsMTAwLDExOCkiLz4KICA8ZWxsaXBzZSBjeD0iMTAwIiBjeT0iMTIyIiByeD0iNDYiIHJ5PSIxMiIgZmlsbD0iIzE1NjVDMCIgb3BhY2l0eT0iMC43IiB0cmFuc2Zvcm09InJvdGF0ZSg4LDEwMCwxMjIpIi8+CiAgPHRleHQgeD0iMTAwIiB5PSIxMTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayxzYW5zLXNlcmlmIiBmb250LXNpemU9IjY0IiBmb250LXdlaWdodD0iOTAwIiBmaWxsPSJ1cmwoI3NHcmFkKSIgbGV0dGVyLXNwYWNpbmc9Ii0yIj5TPC90ZXh0Pgo8L3N2Zz4=" style="height:72px;margin-bottom:18px;filter:drop-shadow(0 4px 16px rgba(249,115,22,.5));">
+  <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--t1);">Attendance Tracking</div>
+  <div style="font-size:12px;color:var(--t2);margin-top:4px;">SunStar Solutions</div>
+  <div style="margin-top:24px;display:flex;gap:6px;">
+    <div style="width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 1.2s infinite;"></div>
+    <div style="width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 1.2s .2s infinite;"></div>
+    <div style="width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 1.2s .4s infinite;"></div>
+  </div>
+</div>
+
+<div class="screen" id="loginScreen">
   <div class="login-card">
     <div class="brand">
       <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj4KICA8ZGVmcz4KICAgIDxyYWRpYWxHcmFkaWVudCBpZD0ic3VuR3JhZCIgY3g9IjUwJSIgY3k9IjQwJSIgcj0iNTAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI0ZGRDcwMCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjYwJSIgc3RvcC1jb2xvcj0iI0ZGOEMwMCIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNGRjQ1MDAiLz4KICAgIDwvcmFkaWFsR3JhZGllbnQ+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9InNHcmFkIiBjeD0iMzAlIiBjeT0iMzAlIiByPSI3MCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjRkY2QjM1Ii8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTAlIiBzdG9wLWNvbG9yPSIjRTg0QjFFIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzE1NjVDMCIvPgogICAgPC9yYWRpYWxHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0ic3dpcmwiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMTk3NkQyIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzBENDdBMSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPCEtLSBTdW4gcmF5cyAtLT4KICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMDAsOTApIiBmaWxsPSJ1cmwoI3N1bkdyYWQpIj4KICAgIDxwb2x5Z29uIHBvaW50cz0iMCwtNTIgNCwtMzggLTQsLTM4IiBvcGFjaXR5PSIwLjkiLz4KICAgIDxwb2x5Z29uIHBvaW50cz0iMCwtNTIgNCwtMzggLTQsLTM4IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCkiIG9wYWNpdHk9IjAuOSIvPgogICAgPHBvbHlnb24gcG9pbnRzPSIwLC01MiA0LC0zOCAtNCwtMzgiIHRyYW5zZm9ybT0icm90YXRlKDYwKSIgb3BhY2l0eT0iMC45Ii8+CiAgICA8cG9seWdvbiBwb2ludHM9IjAsLTUyIDQsLTM4IC00LC0zOCIgdHJhbnNmb3JtPSJyb3RhdGUoOTApIiBvcGFjaXR5PSIwLjkiLz4KICAgIDxwb2x5Z29uIHBvaW50cz0iMCwtNTIgNCwtMzggLTQsLTM4IiB0cmFuc2Zvcm09InJvdGF0ZSgxMjApIiBvcGFjaXR5PSIwLjkiLz4KICAgIDxwb2x5Z29uIHBvaW50cz0iMCwtNTIgNCwtMzggLTQsLTM4IiB0cmFuc2Zvcm09InJvdGF0ZSgxNTApIiBvcGFjaXR5PSIwLjkiLz4KICAgIDxwb2x5Z29uIHBvaW50cz0iMCwtNTIgNCwtMzggLTQsLTM4IiB0cmFuc2Zvcm09InJvdGF0ZSgxODApIiBvcGFjaXR5PSIwLjkiLz4KICAgIDxwb2x5Z29uIHBvaW50cz0iMCwtNTIgNCwtMzggLTQsLTM4IiB0cmFuc2Zvcm09InJvdGF0ZSgyMTApIiBvcGFjaXR5PSIwLjkiLz4KICAgIDxwb2x5Z29uIHBvaW50cz0iMCwtNTIgNCwtMzggLTQsLTM4IiB0cmFuc2Zvcm09InJvdGF0ZSgyNDApIiBvcGFjaXR5PSIwLjkiLz4KICAgIDxwb2x5Z29uIHBvaW50cz0iMCwtNTIgNCwtMzggLTQsLTM4IiB0cmFuc2Zvcm09InJvdGF0ZSgyNzApIiBvcGFjaXR5PSIwLjkiLz4KICAgIDxwb2x5Z29uIHBvaW50cz0iMCwtNTIgNCwtMzggLTQsLTM4IiB0cmFuc2Zvcm09InJvdGF0ZSgzMDApIiBvcGFjaXR5PSIwLjkiLz4KICAgIDxwb2x5Z29uIHBvaW50cz0iMCwtNTIgNCwtMzggLTQsLTM4IiB0cmFuc2Zvcm09InJvdGF0ZSgzMzApIiBvcGFjaXR5PSIwLjkiLz4KICA8L2c+CiAgPCEtLSBTdW4gY2lyY2xlIGJhY2tncm91bmQgLS0+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iOTAiIHI9IjM2IiBmaWxsPSJ1cmwoI3N1bkdyYWQpIiBvcGFjaXR5PSIwLjE1Ii8+CiAgPCEtLSBCbHVlIHN3aXJsIGJvdHRvbSAtLT4KICA8ZWxsaXBzZSBjeD0iMTAwIiBjeT0iMTE4IiByeD0iNDYiIHJ5PSIxMiIgZmlsbD0idXJsKCNzd2lybCkiIG9wYWNpdHk9IjAuOSIgdHJhbnNmb3JtPSJyb3RhdGUoLTEyLDEwMCwxMTgpIi8+CiAgPGVsbGlwc2UgY3g9IjEwMCIgY3k9IjEyMiIgcng9IjQ2IiByeT0iMTIiIGZpbGw9IiMxNTY1QzAiIG9wYWNpdHk9IjAuNyIgdHJhbnNmb3JtPSJyb3RhdGUoOCwxMDAsMTIyKSIvPgogIDwhLS0gUyBsZXR0ZXIgLS0+CiAgPHRleHQgeD0iMTAwIiB5PSIxMTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayxzYW5zLXNlcmlmIiBmb250LXNpemU9IjY0IiBmb250LXdlaWdodD0iOTAwIiBmaWxsPSJ1cmwoI3NHcmFkKSIgbGV0dGVyLXNwYWNpbmc9Ii0yIj5TPC90ZXh0PgogIDwhLS0gV2hpdGUgaGlnaGxpZ2h0cyBvbiBTIC0tPgogIDx0ZXh0IHg9IjEwMCIgeT0iMTEwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwgQmxhY2ssc2Fucy1zZXJpZiIgZm9udC1zaXplPSI2NCIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuMTUiIGxldHRlci1zcGFjaW5nPSItMiI+UzwvdGV4dD4KPC9zdmc+" alt="SunStar Solutions" style="height:80px;width:auto;object-fit:contain;margin-bottom:6px;filter:drop-shadow(0 4px 12px rgba(249,115,22,0.4));">
@@ -762,6 +774,32 @@ var firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 var db   = firebase.firestore();
 var auth = firebase.auth();
+
+/* Persist login across page refresh */
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function() {});
+
+/* Restore session on page load */
+var _authReady = false;
+auth.onAuthStateChanged(function(user) {
+  if (_authReady) return; // already handled
+  _authReady = true;
+  if (!user) { showScr('loginScreen'); return; }
+
+  // User is still logged in — restore their profile from Firestore
+  db.collection('users').doc(user.uid).get()
+    .then(function(snap) {
+      if (snap && snap.exists) {
+        CU = snap.data();
+        CU.id = CU.id || snap.id;
+        if (CU.role === 'superadmin' || CU.role === 'company') { loadAdmin(); }
+        else { loadEmp(); }
+      } else {
+        // Try lookup by custom ID fields in users collection
+        showScr('loginScreen');
+      }
+    })
+    .catch(function() { showScr('loginScreen'); });
+});
 
 /* Helper: ID → Firebase email  e.g.  EMP-001 → emp-001@attendpro.app */
 function idToEmail(id) { return id.toLowerCase() + '@attendpro.app'; }
@@ -2653,6 +2691,8 @@ function openM(id)  { document.getElementById(id).classList.add('open'); }
 function closeM(id) { document.getElementById(id).classList.remove('open'); }
 
 function showScr(id) {
+  var splash = document.getElementById('splashScreen');
+  if (splash) splash.style.display = 'none';
   document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
   document.getElementById(id).classList.add('active');
 }
