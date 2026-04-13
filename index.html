@@ -681,7 +681,53 @@ tbody tr:hover { background:rgba(255,255,255,.015); }
 <!-- ══════════════════════════════════════
      JAVASCRIPT
 ══════════════════════════════════════ -->
-<!-- Install App Modal -->
+<!-- Add Company Modal -->
+<div class="overlay" id="addCoModal">
+  <div class="modal" style="max-width:460px;">
+    <div class="mhead">
+      <div class="mtitle">🏢 Add New Company</div>
+      <button class="mclose" onclick="closeM('addCoModal')">×</button>
+    </div>
+
+    <div style="font-size:11px;color:var(--t2);margin-bottom:16px;padding:10px;background:var(--bg2);border-radius:8px;">
+      A Company Admin account will be created automatically in Firebase.
+    </div>
+
+    <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Company Info</div>
+    <div class="fgroup"><label class="flabel">Company Name *</label><input class="finput" id="coName" placeholder="e.g. TechVision Ltd"></div>
+
+    <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 10px;">Company Admin</div>
+    <div class="frow">
+      <div class="fgroup"><label class="flabel">Admin First Name *</label><input class="finput" id="coAdminFN" placeholder="First"></div>
+      <div class="fgroup"><label class="flabel">Admin Last Name *</label><input class="finput" id="coAdminLN" placeholder="Last"></div>
+    </div>
+    <div class="fgroup"><label class="flabel">Admin Email *</label><input class="finput" type="email" id="coAdminEmail" placeholder="admin@company.com"></div>
+    <div class="fgroup"><label class="flabel">Admin Password *</label><input class="finput" type="password" id="coAdminPass" placeholder="Min 6 characters"></div>
+
+    <div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 10px;">Office Location <span style="color:var(--t3);font-weight:400;text-transform:none;">(Optional — for Back Office check-in zone)</span></div>
+    <div style="display:flex;gap:8px;margin-bottom:6px;">
+      <button class="tbtn" style="flex:1;" onclick="coGetGPS()">📍 Use My Location</button>
+      <button class="tbtn" style="flex:1;" onclick="coManualGPS()">✏️ Enter Manually</button>
+    </div>
+    <div id="coGPSStatus" style="font-size:11px;color:var(--t3);margin-bottom:4px;"></div>
+    <div id="coManualGPS" style="display:none;">
+      <div class="frow">
+        <div class="fgroup"><label class="flabel">Latitude</label><input class="finput" id="coLat" placeholder="22.5726"></div>
+        <div class="fgroup"><label class="flabel">Longitude</label><input class="finput" id="coLng" placeholder="88.3639"></div>
+      </div>
+      <div class="fgroup"><label class="flabel">Check-in Radius (meters)</label><input type="number" class="finput" id="coRadius" value="200" min="50" max="1000"></div>
+    </div>
+
+    <div id="coAddErr" style="display:none;font-size:12px;color:var(--red);padding:8px 10px;background:rgba(239,68,68,.08);border-radius:7px;margin-top:8px;"></div>
+
+    <div class="mbtn-row" style="margin-top:16px;">
+      <button class="mbtn-sec" onclick="closeM('addCoModal')">Cancel</button>
+      <button class="mbtn-acc" id="coAddBtn" onclick="doAddCompany()">Create Company →</button>
+    </div>
+  </div>
+</div>
+
+
 <div class="overlay" id="installModal">
   <div class="modal" style="max-width:360px;text-align:center;">
     <div class="mhead" style="justify-content:center;flex-direction:column;gap:8px;margin-bottom:16px;">
@@ -1502,17 +1548,8 @@ function rDash(B) {
       + '</tr>';
   }).join('');
 
-  var seedBtn = isSA
-    ? '<div style="margin-bottom:18px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:var(--r);padding:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;">'
-      + '<div><div style="font-size:12px;font-weight:700;color:var(--green);">🌱 Firebase Setup</div>'
-      + '<div style="font-size:11px;color:var(--t2);margin-top:3px;">First time? Seed all demo users and companies into Firebase Auth + Firestore.</div></div>'
-      + '<button class="tbtn acc" style="white-space:nowrap;flex-shrink:0;" onclick="seedDemoData()">Seed Demo Data →</button>'
-      + '</div>'
-    : '';
-
   B.innerHTML =
-    seedBtn
-    + '<div class="sgrid">'
+    '<div class="sgrid">'
     + '<div class="sbox green"><div class="blab">Present Today</div><div class="bval">' + present + '</div><div class="bsub">of ' + emps.length + '</div></div>'
     + '<div class="sbox red"><div class="blab">Absent</div><div class="bval">' + absent + '</div><div class="bsub">employees</div></div>'
     + '<div class="sbox orange"><div class="blab">Late</div><div class="bval">' + late + '</div><div class="bsub">today</div></div>'
@@ -1564,7 +1601,7 @@ function rCo(B) {
   B.innerHTML =
     '<div class="co-grid">' + cards + '</div>'
     + '<div class="tcard"><div class="tcard-head"><div class="tcard-title">All Companies</div>'
-    + '<button class="tbtn acc" onclick="openSeedModal()">+ Add Company</button>'
+    + '<button class="tbtn acc" onclick="openM(\'addCoModal\')">+ Add Company</button>'
     + '</div>'
     + '<div style="overflow-x:auto;"><table><thead><tr><th>Company</th><th>Total</th><th>Present</th><th>Absent</th><th>Late</th><th>Status</th><th>Actions</th></tr></thead>'
     + '<tbody>' + tableRows + '</tbody></table></div></div>';
@@ -2654,8 +2691,143 @@ function triggerInstall() {
 }
 
 /* ────────────────────────────────────
-   FIREBASE SEED — Setup Demo Data
+   ADD COMPANY
 ──────────────────────────────────── */
+var _coGPSCoords = null;
+
+function coGetGPS() {
+  var st = document.getElementById('coGPSStatus');
+  st.style.color = 'var(--accent)';
+  st.textContent = '📡 Getting location...';
+  if (!navigator.geolocation) { st.textContent = '❌ GPS not supported. Enter manually.'; return; }
+  navigator.geolocation.getCurrentPosition(
+    function(pos) {
+      _coGPSCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude, radius: 200 };
+      st.style.color = 'var(--green)';
+      st.textContent = '✅ Location captured: ' + _coGPSCoords.lat.toFixed(5) + ', ' + _coGPSCoords.lng.toFixed(5);
+      document.getElementById('coManualGPS').style.display = 'none';
+    },
+    function() {
+      st.style.color = 'var(--red)';
+      st.textContent = '❌ GPS failed. Enter manually.';
+    },
+    { enableHighAccuracy: true, timeout: 8000 }
+  );
+}
+
+function coManualGPS() {
+  var el = document.getElementById('coManualGPS');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function doAddCompany() {
+  var coName     = document.getElementById('coName').value.trim();
+  var adminFN    = document.getElementById('coAdminFN').value.trim();
+  var adminLN    = document.getElementById('coAdminLN').value.trim();
+  var adminEmail = document.getElementById('coAdminEmail').value.trim();
+  var adminPass  = document.getElementById('coAdminPass').value.trim();
+  var errEl      = document.getElementById('coAddErr');
+
+  errEl.style.display = 'none';
+
+  // Validation
+  if (!coName)     { showCoErr('Enter company name'); return; }
+  if (!adminFN || !adminLN) { showCoErr('Enter admin full name'); return; }
+  if (!adminEmail) { showCoErr('Enter admin email'); return; }
+  if (!adminPass || adminPass.length < 6) { showCoErr('Password must be at least 6 characters'); return; }
+
+  // Check manual GPS if entered
+  var latVal = document.getElementById('coLat').value.trim();
+  var lngVal = document.getElementById('coLng').value.trim();
+  if (latVal && lngVal) {
+    _coGPSCoords = { lat: parseFloat(latVal), lng: parseFloat(lngVal), radius: parseInt(document.getElementById('coRadius').value) || 200 };
+  }
+
+  var btn = document.getElementById('coAddBtn');
+  btn.disabled = true;
+  btn.textContent = 'Creating...';
+
+  // Generate Company ID
+  var coId    = 'CO-' + Date.now().toString().slice(-6);
+  var adminId = 'CAD-' + Date.now().toString().slice(-6);
+  var adminAv = (adminFN[0] + adminLN[0]).toUpperCase();
+
+  var companyData = {
+    id: coId, name: coName,
+    logo: '🏢', employees: 0,
+    present: 0, absent: 0, late: 0,
+    active: true,
+    officeLocation: _coGPSCoords || null,
+    createdAt: new Date().toISOString()
+  };
+
+  var adminData = {
+    id: adminId, name: adminFN + ' ' + adminLN,
+    email: adminEmail, co: coId,
+    role: 'company', av: adminAv,
+    active: true
+  };
+
+  // Step 1: Create Firebase Auth user for admin
+  var secondary = null;
+  try {
+    secondary = firebase.initializeApp(firebaseConfig, 'co_create_' + Date.now());
+  } catch(e) { secondary = null; }
+
+  if (!secondary) {
+    showCoErr('Firebase init failed. Try again.');
+    btn.disabled = false; btn.textContent = 'Create Company →';
+    return;
+  }
+
+  secondary.auth().createUserWithEmailAndPassword(adminEmail, adminPass)
+    .then(function(uc) {
+      var uid = uc.user.uid;
+      adminData.uid = uid;
+      return secondary.auth().signOut();
+    })
+    .then(function() {
+      // Step 2: Save company + admin to Firestore in batch
+      var batch = db.batch();
+      batch.set(db.collection('companies').doc(coId), companyData);
+      batch.set(db.collection('users').doc(adminData.uid), adminData);
+      batch.set(db.collection('companies').doc(coId).collection('admins').doc(adminId), adminData);
+      return batch.commit();
+    })
+    .then(function() {
+      // Add to local cache
+      D.companies.push(companyData);
+      D.companyAdmins.push(adminData);
+      _coGPSCoords = null;
+
+      // Reset form
+      ['coName','coAdminFN','coAdminLN','coAdminEmail','coAdminPass','coLat','coLng'].forEach(function(id) {
+        var el = document.getElementById(id); if (el) el.value = '';
+      });
+      document.getElementById('coGPSStatus').textContent = '';
+      document.getElementById('coManualGPS').style.display = 'none';
+      btn.disabled = false; btn.textContent = 'Create Company →';
+
+      closeM('addCoModal');
+      toast('ok', '🏢', coName + ' created! Admin: ' + adminEmail);
+      apage('companies', null);
+    })
+    .catch(function(err) {
+      btn.disabled = false; btn.textContent = 'Create Company →';
+      var msg = err.message || 'Something went wrong';
+      if (err.code === 'auth/email-already-in-use') { msg = 'This email is already registered.'; }
+      if (err.code === 'auth/invalid-email') { msg = 'Invalid email address.'; }
+      showCoErr(msg);
+    });
+}
+
+function showCoErr(msg) {
+  var el = document.getElementById('coAddErr');
+  el.textContent = '❌ ' + msg;
+  el.style.display = 'block';
+}
+
+
 function openSeedModal() {
   toast('ok','🌱','Use "Seed Demo Data to Firebase" in the Dashboard to set up users first.');
 }
