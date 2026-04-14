@@ -778,25 +778,50 @@ var auth = firebase.auth();
 /* Persist login across page refresh */
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function() {});
 
-/* Restore session on page load */
+/* Restore session on page load — max 5 seconds wait */
 var _authReady = false;
+var _splashTimer = setTimeout(function() {
+  if (!_authReady) { _authReady = true; showScr('loginScreen'); }
+}, 5000);
+
 auth.onAuthStateChanged(function(user) {
-  if (_authReady) return; // already handled
+  if (_authReady) return;
   _authReady = true;
+  clearTimeout(_splashTimer);
+
   if (!user) { showScr('loginScreen'); return; }
 
-  // User is still logged in — restore their profile from Firestore
   db.collection('users').doc(user.uid).get()
     .then(function(snap) {
       if (snap && snap.exists) {
         CU = snap.data();
         CU.id = CU.id || snap.id;
+        CU._uid = user.uid;
         if (CU.role === 'superadmin' || CU.role === 'company') { loadAdmin(); }
         else { loadEmp(); }
-      } else {
-        // Try lookup by custom ID fields in users collection
-        showScr('loginScreen');
+        return;
       }
+      // Check admins subcollection
+      return db.collectionGroup('admins').where('uid', '==', user.uid).limit(1).get()
+        .then(function(q) {
+          if (!q.empty) {
+            var d = q.docs[0].data(); d.uid = user.uid;
+            db.collection('users').doc(user.uid).set(d).catch(function(){});
+            CU = d; CU._uid = user.uid;
+            loadAdmin(); return;
+          }
+          // Check employees subcollection
+          return db.collectionGroup('employees').where('uid', '==', user.uid).limit(1).get()
+            .then(function(eq) {
+              if (!eq.empty) {
+                var d = eq.docs[0].data(); d.uid = user.uid;
+                db.collection('users').doc(user.uid).set(d).catch(function(){});
+                CU = d; CU._uid = user.uid;
+                loadEmp(); return;
+              }
+              showScr('loginScreen');
+            });
+        });
     })
     .catch(function() { showScr('loginScreen'); });
 });
@@ -931,19 +956,31 @@ function doLogin() {
   auth.signInWithEmailAndPassword(loginEmail, pass)
     .then(function(uc) {
       var uid = uc.user.uid;
-      // First try lookup by Firebase UID (for real-email users)
+      // First try users/{uid} (superadmin + employees)
       return db.collection('users').doc(uid).get().then(function(snap) {
-        if (snap && snap.exists) { return snap; }
-        // Fallback: lookup by uppercase ID (for ID-based users e.g. EMP-001)
-        var upperId = raw.toUpperCase();
-        return db.collection('users').doc(upperId).get();
+        if (snap && snap.exists) { return { snap: snap, uid: uid }; }
+        // Fallback: search companies admins subcollection (company admins)
+        return db.collectionGroup('admins').where('uid', '==', uid).limit(1).get()
+          .then(function(q) {
+            if (!q.empty) {
+              var adminData = q.docs[0].data();
+              adminData.uid = uid;
+              // Auto-create users/{uid} for faster future logins
+              db.collection('users').doc(uid).set(adminData).catch(function(){});
+              return { snap: { exists: true, data: function(){ return adminData; }, id: uid }, uid: uid };
+            }
+            return { snap: null, uid: uid };
+          });
       });
     })
-    .then(function(snap) {
+    .then(function(result) {
       resetBtn();
+      var snap = result ? result.snap : null;
+      var uid  = result ? result.uid  : null;
       if (snap && snap.exists) {
         CU = snap.data();
-        CU.id = CU.id || snap.id;
+        CU.id   = CU.id   || snap.id;
+        CU._uid = uid;
         if (CU.role === 'superadmin' || CU.role === 'company') { loadAdmin(); }
         else { loadEmp(); }
       } else {
@@ -1958,7 +1995,7 @@ function doAddEmp() {
   closeM('addEmpModal');
   toast('ok', '⏳', 'Adding ' + fn + ' ' + ln + '...');
 
-  // Create Firebase Auth user via REST API
+  var _empCreated = false;
   fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=' + firebaseConfig.apiKey, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -1969,19 +2006,21 @@ function doAddEmp() {
     if (data.error) { throw new Error(data.error.message); }
     var uid = data.localId;
     empData.uid = uid;
-    empData.defaultPass = empPass; // store so admin can share with employee
+    empData.defaultPass = empPass;
+    _empCreated = true;
 
     var batch = db.batch();
-    batch.set(db.collection('users').doc(uid), empData);
-    if (coId) batch.set(db.collection('companies').doc(coId).collection('employees').doc(newId), empData);
+    // Save under companies/{coId}/employees — company admin can write here
+    if (coId) batch.set(db.collection('companies').doc(coId).collection('employees').doc(uid), empData);
     return batch.commit();
   })
   .then(function() {
-    toast('ok', '✅', fn + ' ' + ln + ' added ☁️ | Login: ' + empEmail + ' / ' + empPass);
+    if (!_empCreated) return;
+    toast('ok', '✅', fn + ' ' + ln + ' added ☁️\nLogin: ' + empEmail + '\nPass: ' + empPass);
     apage(curAP, null);
   })
   .catch(function(e) {
-    toast('err', '⚠️', 'Added locally. Firebase error: ' + (e.message || ''));
+    toast('err', '⚠️', 'Firebase error: ' + (e.message || 'unknown'));
     apage(curAP, null);
   });
 }
@@ -2783,6 +2822,7 @@ function doAddCompany() {
   };
 
   // Use Firebase Auth REST API to create user — no secondary app, no logout
+  var _coCreated = false;
   fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=' + firebaseConfig.apiKey, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -2792,30 +2832,28 @@ function doAddCompany() {
   .then(function(data) {
     if (data.error) {
       var msg = data.error.message || 'Firebase error';
-      if (msg === 'EMAIL_EXISTS')       msg = 'This email is already registered.';
-      if (msg === 'INVALID_EMAIL')      msg = 'Invalid email address.';
-      if (msg === 'WEAK_PASSWORD : Password should be at least 6 characters') msg = 'Password must be at least 6 characters.';
+      if (msg === 'EMAIL_EXISTS')           msg = 'This email is already registered.';
+      if (msg === 'INVALID_EMAIL')          msg = 'Invalid email address.';
+      if (msg.indexOf('WEAK_PASSWORD') !== -1) msg = 'Password must be at least 6 characters.';
       showCoErr(msg);
       btn.disabled = false; btn.textContent = 'Create Company →';
-      return;
+      return Promise.reject('handled');
     }
 
     var uid = data.localId;
     adminData.uid = uid;
+    _coCreated = true;
 
-    // Save to Firestore
     var batch = db.batch();
     batch.set(db.collection('companies').doc(coId), companyData);
-    batch.set(db.collection('users').doc(uid), adminData);
-    batch.set(db.collection('companies').doc(coId).collection('admins').doc(adminId), adminData);
+    batch.set(db.collection('companies').doc(coId).collection('admins').doc(uid), adminData);
     return batch.commit();
   })
   .then(function() {
-    if (!arguments[0] && arguments[0] !== undefined) return; // error already handled above
+    if (!_coCreated) return;
     D.companies.push(companyData);
     _coGPSCoords = null;
 
-    // Reset form
     ['coName','coAdminFN','coAdminLN','coAdminEmail','coAdminPass','coLat','coLng'].forEach(function(id) {
       var el = document.getElementById(id); if (el) el.value = '';
     });
@@ -2828,8 +2866,9 @@ function doAddCompany() {
     apage('companies', null);
   })
   .catch(function(err) {
+    if (err === 'handled') return;
     btn.disabled = false; btn.textContent = 'Create Company →';
-    showCoErr('Network error. Check your connection and try again.');
+    showCoErr('Save failed: ' + (err.message || 'Check Firestore rules'));
     console.error(err);
   });
 }
