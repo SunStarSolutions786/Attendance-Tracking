@@ -1557,8 +1557,14 @@ function doAddCompany() {
   fbCreateUser(adminEmail, adminPass)
     .then(function(d){
       var uid=d.localId; adminData.uid=uid; adminData.id=uid; _ok=true;
-      return db.collection('companies').doc(coId).set(companyData)
-        .then(function(){ return db.collection('companies').doc(coId).collection('admins').doc(uid).set(adminData); });
+      // Save company + admin profile in BOTH places:
+      // 1. companies/{coId}/admins/{uid}  — for company structure
+      // 2. users/{uid}                    — so login finds profile instantly
+      var batch = db.batch();
+      batch.set(db.collection('companies').doc(coId), companyData);
+      batch.set(db.collection('companies').doc(coId).collection('admins').doc(uid), adminData);
+      batch.set(db.collection('users').doc(uid), adminData);
+      return batch.commit();
     })
     .then(function(){
       if(!_ok) return;
@@ -1670,7 +1676,11 @@ function doAddEmp() {
   fbCreateUser(empEmail, empPass)
     .then(function(d){
       var uid=d.localId; empData.uid=uid; empData.id=uid;
-      return db.collection('companies').doc(coId).collection('employees').doc(uid).set(empData);
+      var batch = db.batch();
+      // Save in both places so login works immediately
+      batch.set(db.collection('companies').doc(coId).collection('employees').doc(uid), empData);
+      batch.set(db.collection('users').doc(uid), empData);
+      return batch.commit();
     })
     .then(function(){
       toast('ok','✅',fn+' '+ln+' added!\nLogin: '+empEmail+'\nPass: '+empPass);
